@@ -1,0 +1,24 @@
+plugins {
+	id 'com.android.library'
+	id 'kotlin-android'
+	id 'kotlin-android-extensions'
+}
+
+dependencies {
+	implementation 'androidx.databinding:viewbinding:7.2.1'
+	implementation 'androidx.core:core-ktx:1.8.0'
+	implementation 'androidx.appcompat:appcompat:1.4.2'
+	implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1'
+	implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.0'
+}
+
+android {
+	compileSdkVersion 32
+	buildToolsVersion "17.0.0"
+
+	defaultConfig {
+		minSdkVersion 7
+		targetSdkVersion 32
+		multiDexEnabled true
+	}
+}
