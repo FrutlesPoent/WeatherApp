@@ -3,8 +3,8 @@ package com.example.weather.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weather.domain.WeatherText
-import com.example.weather.domain.WeatherType
 import com.example.weather.shared.weather.domain.usecase.GetCurrentWeatherUseCase
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,31 +28,26 @@ class MainViewModel(
 	val stateFlow: Flow<WeatherState>
 		get() = _stateFlow.asStateFlow()
 
-	private val _weatherTextFlow = MutableStateFlow<WeatherText?>(null)
-	val weatherTextFlow: Flow<WeatherText?>
-		get() = _weatherTextFlow.asStateFlow()
+	private val fetchErrorHandler = CoroutineExceptionHandler { _, _ ->
+		_stateFlow.value = WeatherState.Error
+	}
 
 	fun fetchCurrentWeather() {
-		viewModelScope.launch {
-			try {
-				_stateFlow.value = WeatherState.Loading
-				val weatherEntity = getCurrentWeatherUseCase(NOVOSIBIRSK, APPID)
-				val iconUrl = URL_START + weatherEntity.weather[0].icon + URL_END
-				val weatherText = WeatherText(
-					cityName = weatherEntity.cityName,
-					countryCode = weatherEntity.sys.country,
-					temperature = kelvinToCelsius(weatherEntity.temperatureStats.temp).toString() + " ℃",
-					iconUrl = iconUrl,
-					lastUpdated = getLastUpdate(weatherEntity.dt),
-					desc = weatherEntity.weather[0].description.uppercase(Locale.US),
-					pressure = weatherEntity.temperatureStats.humidity.toString() + " %",
-					humidity = weatherEntity.temperatureStats.pressure.toString() + " hPa",
-				)
-				_weatherTextFlow.value = weatherText
-				_stateFlow.value = WeatherState.Content(WeatherType.ClearSky)
-			} catch (throwable: Throwable) {
-				println(throwable.toString())
-			}
+		viewModelScope.launch(fetchErrorHandler) {
+			_stateFlow.value = WeatherState.Loading
+			val weatherEntity = getCurrentWeatherUseCase(NOVOSIBIRSK, APPID)
+			val iconUrl = URL_START + weatherEntity.weather[0].icon + URL_END
+			val weatherText = WeatherText(
+				cityName = weatherEntity.cityName,
+				countryCode = weatherEntity.sys.country,
+				temperature = kelvinToCelsius(weatherEntity.temperatureStats.temp).toString() + " ℃",
+				iconUrl = iconUrl,
+				lastUpdated = getLastUpdate(weatherEntity.dt),
+				desc = weatherEntity.weather[0].description.uppercase(Locale.US),
+				pressure = weatherEntity.temperatureStats.humidity.toString() + " %",
+				humidity = weatherEntity.temperatureStats.pressure.toString() + " hPa",
+			)
+			_stateFlow.value = WeatherState.Content(weatherText)
 		}
 	}
 

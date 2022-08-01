@@ -1,6 +1,6 @@
 package com.example.weather.presentation
 
-import com.example.weather.domain.WeatherType
+import com.example.weather.domain.WeatherText
 
 sealed class WeatherState {
 
@@ -8,7 +8,7 @@ sealed class WeatherState {
 
 	object Loading : WeatherState()
 
-	data class Content(val weatherType: WeatherType) : WeatherState()
+	data class Content(val weatherContent: WeatherText) : WeatherState()
 
-	data class Error(val errorCode: Int) : WeatherState()
+	object Error : WeatherState()
 }

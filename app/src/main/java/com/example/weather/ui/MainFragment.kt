@@ -39,21 +39,32 @@ class MainFragment : BindingFragment<MainFragmentBinding>() {
 	}
 
 	private fun renderUi(state: WeatherState) {
-		binding.mainScreen.isVisible = state is WeatherState.Content
-		viewModel.weatherTextFlow.onEach {
-			if (it != null) {
-				binding.cityName.text = it.cityName
-				Picasso
-					.get()
-					.load(it.iconUrl)
-					.resize(500, 500)
-					.centerCrop()
-					.into(binding.weatherIcon)
-				binding.updatedField.text = it.lastUpdated.toString()
-				binding.currentTemperatureField.text = it.temperature
-				binding.detailsField.text = it.desc + "\n" + "Pressure: " + it.pressure + "\n" + "Humidity: " + it.humidity
-			}
-		}.launchWhenResumed(viewLifecycleOwner.lifecycleScope)
+		when (state) {
+			is WeatherState.Content -> renderContent(state)
+			is WeatherState.Error   -> renderError()
+
+			else                    -> {}
+		}
+	}
+
+	private fun renderContent(state: WeatherState.Content) {
+		binding.mainScreen.isVisible = true
+		binding.errorMessage.isVisible = false
+
+		state.weatherContent.let {
+			binding.cityName.text = it.cityName
+			binding.updatedField.text = it.lastUpdated.toString()
+			binding.currentTemperatureField.text = it.temperature
+			binding.detailsField.text = it.desc + "\n" + "Pressure: " + it.pressure + "\n" + "Humidity: " + it.humidity
+			Picasso.get().load(it.iconUrl).resize(500, 500).centerCrop().into(binding.weatherIcon)
+		}
+
+	}
+
+	private fun renderError() {
+		binding.mainScreen.isVisible = true
+		binding.errorMessage.isVisible = true
+		binding.errorMessage.text = "Произошла ошибка"
 	}
 
 	private fun bindSystemButton() {
